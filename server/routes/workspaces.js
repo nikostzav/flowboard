@@ -28,4 +28,19 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/',authMiddleware,async (req,res) => {
+    try {
+  const result = await pool.query(
+    `SELECT workspaces.* FROM workspaces
+     JOIN workspace_members ON workspaces.id = workspace_members.workspace_id
+     WHERE workspace_members.user_id = $1`,
+    [req.user.userId]
+  );
+  res.status(200).json({result : result.rows})
+} catch (err) {
+  console.log(err);
+  res.status(500).json({ err: "Something went wrong." });
+}
+})
+
 module.exports = router;
