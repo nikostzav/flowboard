@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -6,18 +6,26 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE workspaces (
+CREATE TABLE IF NOT EXISTS workspaces (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, 
     created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE workspace_members (
+CREATE TABLE IF NOT EXISTS workspace_members (
     id SERIAL PRIMARY KEY,
     workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     role VARCHAR(50) NOT NULL DEFAULT 'member',
     joined_at TIMESTAMP DEFAULT NOW(),
     UNIQUE(workspace_id,user_id)
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+    id SERIAL PRIMARY KEY,
+    workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
 );
