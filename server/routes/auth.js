@@ -5,9 +5,11 @@ const pool = require("../db");
 
 const router = express.Router();
 
+//Sign up post
+
 router.post("/signup", async (req, res) => {
   const { email, password, name } = req.body;
-  if ((!email, !password, !name)) {
+  if (!email || !password || !name) {
     return res
       .status(400)
       .json({ error: "Email password and username are required ! " });
@@ -39,6 +41,41 @@ router.post("/signup", async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Something went wrong.Try again!" });
+  }
+});
+
+//login
+router.post("/login", async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ err: "Email and password are required ! " });
+  }
+
+  try {
+    const findUser = await pool.query(`SELECT * FROM users WHERE email = $1 `, [
+      email,
+    ]);
+    if (findUser.rows.length == 0) {
+      res.status(401).json({ err: "Wrong credentials." });
+    } else {
+      const passwordsMatch = await bcrypt.compare(
+        password,
+        findUser.rows[0].password_hash,
+      );
+      if (!passwordsMatch) {
+        return res.status(401).json({
+          err: "Wrong credentials",
+        });
+      }
+      const user = findUser.rows[0];
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      const { password_hash, ...safeUser } = findUser.rows[0];
+      res.status(200).json({ user: safeUser, token });
+    }
+  } catch (err) {
+    res.status(400).json({ err: "Error getting user! " });
   }
 });
 
