@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../db");
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -76,6 +77,19 @@ router.post("/login", async (req, res) => {
     }
   } catch (err) {
     res.status(400).json({ err: "Error getting user! " });
+  }
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id,email,name FROM users WHERE id = $1",
+      [req.user.userId],
+    );
+    res.status(200).json({ user: result.rows[0] });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ err: "Something went wrong" });
   }
 });
 
