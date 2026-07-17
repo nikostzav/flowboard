@@ -36,4 +36,27 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+router.get("/:workspace_id", authMiddleware, async (req, res) => {
+  const { workspace_id } = req.params;
+  // request the projects for the worskpace
+  try {
+    const membership = await pool.query(
+      "SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2",
+      [workspace_id, req.user.userId],
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ message: "No access to this project!" });
+    }
+
+    const result = await pool.query(
+      "SELECT * FROM projects where workspace_id = $1",
+      [workspace_id],
+    );
+    res.status(200).json({ projects: result.rows });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ err: "Something went wrong" });
+  }
+});
+
 module.exports = router;
