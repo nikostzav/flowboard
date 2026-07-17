@@ -29,3 +29,14 @@ CREATE TABLE IF NOT EXISTS projects (
     description TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    title VARCHAR(50),
+    description TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'todo',
+    assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    due_date DATE,
+    created_at TIMESTAMP DEFAULT NOW()
+);

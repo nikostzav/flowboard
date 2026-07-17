@@ -15,5 +15,8 @@ app.use("/api/workspaces", workspaceRoutes);
 const projectRoutes = require("./routes/projects");
 app.use("/api/projects", projectRoutes);
 
+const taskRoutes = require("./routes/tasks");
+app.use("/api/projects/:project_id/tasks", taskRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
