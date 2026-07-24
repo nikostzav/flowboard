@@ -42,21 +42,34 @@ export default function ProjectDetail() {
         console.log(err);
       }
     };
-    if(workspaceId) fetchMembers();
-  }, []);
+    if (workspaceId) fetchMembers();
+  }, [workspaceId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!taskTitle) return ;
-    setCreating(true)
-    try{
+    if (!taskTitle) return;
+    setCreating(true);
+    try {
+      const response = await api.post(`/projects/${projectId}/tasks`, {
+        title: taskTitle,
+        description,
+        assignee_id: assigneeId || null,
+      });
 
-    }catch(err){
+      setTasks((prev) => [...prev, response.data.task]);
+      setTasktitle("");
+      setDescription("");
+      setAssigneeId("");
+    } catch (err) {
       setError("Could not create task");
-      
-    }finally{
-      setCreating(false)
+    } finally {
+      setCreating(false);
     }
+  };
+
+  const getAssigneeName = (assigneeId) => {
+    const member = members.find((m) => m.id === assigneeId);
+    return member ? member.name : "Unassigned";
   };
 
   return (
@@ -80,7 +93,28 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {!loading && tasks.length > 0 && <div></div>}
+        {!loading && tasks.length > 0 && (
+          <div className="row g-3 mb-5">
+            {tasks.map((task) => (
+              <div className="col-md-4" key={task.id}>
+                <div className="card h-100 shadow-sm border-0">
+                  <div className="card-body">
+                    <h5 className="card-title mb-1">{task.title}</h5>
+                    <p className="card-text text-secondary small mb-1">
+                      {task.description}
+                    </p>
+                    <p className="card-text text-secondary small mb-0">
+                      Assigned to: {getAssigneeName(task.assignee_id)}
+                    </p>
+                    <p className="card-text text-secondary small mb-0">
+                      Status: {task.status}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <hr className="my-4"></hr>
 
@@ -104,6 +138,18 @@ export default function ProjectDetail() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               ></input>
+              <select
+                className="form-select"
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+              >
+                <option value="">Unassigned</option>
+                {members.map((member) => (
+                  <option key={member.id} value={member.id}>
+                    {member.name}
+                  </option>
+                ))}
+              </select>
               <button
                 className="btn btn-primary text-nowrap"
                 type="submit"
