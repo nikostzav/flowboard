@@ -72,6 +72,10 @@ export default function ProjectDetail() {
     return member ? member.name : "Unassigned";
   };
 
+  const toDoTasks = tasks.filter((t) => t.status === "todo");
+  const inProgressTasks = tasks.filter((t) => t.status === "in_progress");
+  const doneTasks = tasks.filter((t) => t.status === "done");
+
   return (
     <div className="container py-5" style={{ maxWidth: "900px" }}>
       <div className="mb-4">
@@ -94,28 +98,63 @@ export default function ProjectDetail() {
         )}
 
         {!loading && tasks.length > 0 && (
-          <div className="row g-3 mb-5">
-            {tasks.map((task) => (
-              <div className="col-md-4" key={task.id}>
-                <div className="card h-100 shadow-sm border-0">
-                  <div className="card-body">
-                    <h5 className="card-title mb-1">{task.title}</h5>
-                    <p className="card-text text-secondary small mb-1">
-                      {task.description}
-                    </p>
-                    <p className="card-text text-secondary small mb-0">
-                      Assigned to: {getAssigneeName(task.assignee_id)}
-                    </p>
-                    <p className="card-text text-secondary small mb-0">
-                      Status: {task.status}
-                    </p>
+          <div className="row g-3 mb-5 mt-3 ">
+            <div className="col-md-4">
+              <h6 className="text-secondary text-uppercase small mb-3">
+                To Do
+              </h6>
+              {toDoTasks.map((t) => {
+                return (
+                  <div className="card shadow border mt-3" key={t.id}>
+                    <div className="card-body">
+                      <h5 className="card-title mb-1">{t.title}</h5>
+                      <p className="card-text mt-2">
+                        Description : {t.description}
+                      </p>
+                      <p className="card-text">
+                        Asigned to : {getAssigneeName(t.assignee_id)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
+            <div className="col-md-4">
+              <h6 className="text-secondary text-uppercase small mb-3">
+                In Progress
+              </h6>
+              {inProgressTasks.map((t) => {
+                return (
+                  <div className="card shadow border mt-3" key={t.id}>
+                    <div className="card-body">
+                      <h5 className="cart-title mb-1">{t.title}</h5>
+                      <p className="card-text">{t.description}</p>
+                      <p className="card-text">
+                        Asigned to : {getAssigneeName(t.assignee_id)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="col-md-4">
+              <h6 className="text-secondary text-uppercase small mb-3">Done</h6>
+              {doneTasks.map((t) => {
+                return (
+                  <div className="card shadow border mt-3" key={t.id}>
+                    <div className="card-body">
+                      <h5 className="cart-title mb-1">{t.title}</h5>
+                      <p className="card-text">{t.description}</p>
+                      <p className="card-text">
+                        Asigned to : {getAssigneeName(t.assignee_id)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
-
         <hr className="my-4"></hr>
 
         <div className="card border-0 shadow-sm">
@@ -157,7 +196,6 @@ export default function ProjectDetail() {
               >
                 Add Task
               </button>
-              {console.log(members)}
             </form>
           </div>
         </div>
