@@ -23,8 +23,6 @@ router.post("/", authMiddleware, async (req, res) => {
         .json({ err: "You are not a member of this workspace." });
     }
 
-    // your INSERT INTO projects goes here — use RETURNING * like you did for workspaces
-    // then res.status(201).json({ project: ... })
     const project = await pool.query(
       "INSERT INTO projects (workspace_id,name,description) VALUES ($1,$2,$3) RETURNING *",
       [workspace_id, name, description ? description : null],
