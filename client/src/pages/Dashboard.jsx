@@ -72,7 +72,7 @@ function Dashboard() {
               <Link
                 to={`/workspaces/${ws.id}`}
                 className="text-decoration-none text-dark"
-                state={{workspaceName : ws.name}}
+                state={{ workspaceName: ws.name }}
               >
                 <div className="card h-100 shadow-sm border-0">
                   <div className="card-body">
