@@ -73,4 +73,47 @@ router.get("/:workspace_id/members", authMiddleware, async (req, res) => {
   }
 });
 
+router.post("/:workspace_id/members", authMiddleware, async (req, res) => {
+  const { workspace_id } = req.params;
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ err: "Email is required" });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2 AND role = 'owner'`,
+      [workspace_id, req.user.userId],
+    );
+    if (result.rows.length === 0) {
+      return res.status(403).json({ err: "Only the owner can invite members" });
+    }
+    const inviteUser = await pool.query(
+      `SELECT id,name FROM users WHERE  email = $1`,
+      [email],
+    );
+    if (inviteUser.rows.length === 0) {
+      return res.status(404).json({ err: "No user with that email" });
+    }
+    const alreadyMember = await pool.query(
+      `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
+      [workspace_id, inviteUser.rows[0].id],
+    );
+    if (alreadyMember.rows.length > 0) {
+      res.status(409).json({ err: "This user is already a member" });
+    }
+    const newMember = await pool.query(
+      `INSERT INTO workspace_members (workspace_id,user_id,role) VALUES ($1,$2,'member') RETURNING *`,
+      [workspace_id, inviteUser.rows[0].id],
+    );
+    res.status(201).json({
+      member: { id: inviteUser.rows[0].id, name: inviteUser.rows[0].name },
+    });
+  } catch (err) {
+    console.log("Something went wrong!");
+    res.status(500).json({ err: "Something went wrong!" });
+  }
+});
+
 module.exports = router;
