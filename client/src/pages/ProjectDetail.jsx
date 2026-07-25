@@ -1,6 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import api from "../api/axios";
+import { DndContext, useDroppable, useDraggable } from "@dnd-kit/core";
+
+function DroppableColumn({ id, title, children }) {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div className="col-md-4" ref={setNodeRef}>
+      <h6 className="text-secondary text-uppercase small mb-3">{title}</h6>
+      {children}
+    </div>
+  );
+}
+
+function DraggebleTask({ task, children }) {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate(${transform.x}px,${transform.y}px)`,
+      }
+    : undefined;
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      {children}
+    </div>
+  );
+}
 
 export default function ProjectDetail() {
   const { projectId } = useParams();
@@ -18,6 +46,29 @@ export default function ProjectDetail() {
 
   const [members, setMembers] = useState([]);
   const [assigneeId, setAssigneeId] = useState("");
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over) return;
+    const taskId = active.id;
+    const newStatus = over.id;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || task.status === newStatus) return;
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
+    );
+    try {
+      await api.patch(`/projects/${projectId}/tasks/${taskId}`, {
+        status: newStatus,
+      });
+    } catch (err) {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: task.status } : t)),
+      );
+      setError("Could not update task status");
+    }
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -98,62 +149,65 @@ export default function ProjectDetail() {
         )}
 
         {!loading && tasks.length > 0 && (
-          <div className="row g-3 mb-5 mt-3 ">
-            <div className="col-md-4">
-              <h6 className="text-secondary text-uppercase small mb-3">
-                To Do
-              </h6>
-              {toDoTasks.map((t) => {
-                return (
-                  <div className="card shadow border mt-3" key={t.id}>
-                    <div className="card-body">
-                      <h5 className="card-title mb-1">{t.title}</h5>
-                      <p className="card-text mt-2">
-                        Description : {t.description}
-                      </p>
-                      <p className="card-text">
-                        Asigned to : {getAssigneeName(t.assignee_id)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+          <DndContext onDragEnd={handleDragEnd}>
+            <div className="row g-3 mb-5 mt-3 ">
+              <DroppableColumn id="todo" title="To Do">
+                {toDoTasks.map((t) => {
+                  return (
+                    <DraggebleTask key={t.id} task={t}>
+                      <div className="card shadow border mt-3" key={t.id}>
+                        <div className="card-body">
+                          <h5 className="card-title mb-1">{t.title}</h5>
+                          <p className="card-text mt-2">
+                            Description : {t.description}
+                          </p>
+                          <p className="card-text">
+                            Asigned to : {getAssigneeName(t.assignee_id)}
+                          </p>
+                        </div>
+                      </div>
+                    </DraggebleTask>
+                  );
+                })}
+              </DroppableColumn>
+
+              <DroppableColumn id="in_progress" title="In Progress">
+                {inProgressTasks.map((t) => {
+                  return (
+                    <DraggebleTask key={t.id} task={t}>
+                      <div className="card shadow border mt-3" key={t.id}>
+                        <div className="card-body">
+                          <h5 className="cart-title mb-1">{t.title}</h5>
+                          <p className="card-text">{t.description}</p>
+                          <p className="card-text">
+                            Asigned to : {getAssigneeName(t.assignee_id)}
+                          </p>
+                        </div>
+                      </div>
+                    </DraggebleTask>
+                  );
+                })}
+              </DroppableColumn>
+
+              <DroppableColumn id="done" title="Done">
+                {doneTasks.map((t) => {
+                  return (
+                    <DraggebleTask key={t.id} task={t}>
+                      <div className="card shadow border mt-3" key={t.id}>
+                        <div className="card-body">
+                          <h5 className="cart-title mb-1">{t.title}</h5>
+                          <p className="card-text">{t.description}</p>
+                          <p className="card-text">
+                            Asigned to : {getAssigneeName(t.assignee_id)}
+                          </p>
+                        </div>
+                      </div>
+                    </DraggebleTask>
+                  );
+                })}
+              </DroppableColumn>
             </div>
-            <div className="col-md-4">
-              <h6 className="text-secondary text-uppercase small mb-3">
-                In Progress
-              </h6>
-              {inProgressTasks.map((t) => {
-                return (
-                  <div className="card shadow border mt-3" key={t.id}>
-                    <div className="card-body">
-                      <h5 className="cart-title mb-1">{t.title}</h5>
-                      <p className="card-text">{t.description}</p>
-                      <p className="card-text">
-                        Asigned to : {getAssigneeName(t.assignee_id)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="col-md-4">
-              <h6 className="text-secondary text-uppercase small mb-3">Done</h6>
-              {doneTasks.map((t) => {
-                return (
-                  <div className="card shadow border mt-3" key={t.id}>
-                    <div className="card-body">
-                      <h5 className="cart-title mb-1">{t.title}</h5>
-                      <p className="card-text">{t.description}</p>
-                      <p className="card-text">
-                        Asigned to : {getAssigneeName(t.assignee_id)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          </DndContext>
         )}
         <hr className="my-4"></hr>
 
