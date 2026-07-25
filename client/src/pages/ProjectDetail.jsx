@@ -127,6 +127,19 @@ export default function ProjectDetail() {
   const inProgressTasks = tasks.filter((t) => t.status === "in_progress");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "todo":
+        return "#6c757d"; // gray
+      case "in_progress":
+        return "#0d6efd"; // blue
+      case "done":
+        return "#198754"; // green
+      default:
+        return "#dee2e6";
+    }
+  };
+
   return (
     <div className="container py-5" style={{ maxWidth: "900px" }}>
       <div className="mb-4">
@@ -155,7 +168,12 @@ export default function ProjectDetail() {
                 {toDoTasks.map((t) => {
                   return (
                     <DraggebleTask key={t.id} task={t}>
-                      <div className="card shadow border mt-3" key={t.id}>
+                      <div
+                        className="card shadow mt-3"
+                        style={{
+                          borderLeft: `4px solid ${getStatusColor(t.status)}`,
+                        }}
+                      >
                         <div className="card-body">
                           <h5 className="card-title mb-1">{t.title}</h5>
                           <p className="card-text mt-2">
@@ -175,7 +193,12 @@ export default function ProjectDetail() {
                 {inProgressTasks.map((t) => {
                   return (
                     <DraggebleTask key={t.id} task={t}>
-                      <div className="card shadow border mt-3" key={t.id}>
+                      <div
+                        className="card shadow  mt-3"
+                        style={{
+                          borderLeft: `4px solid ${getStatusColor(t.status)}`,
+                        }}
+                      >
                         <div className="card-body">
                           <h5 className="cart-title mb-1">{t.title}</h5>
                           <p className="card-text">{t.description}</p>
@@ -193,7 +216,12 @@ export default function ProjectDetail() {
                 {doneTasks.map((t) => {
                   return (
                     <DraggebleTask key={t.id} task={t}>
-                      <div className="card shadow border mt-3" key={t.id}>
+                      <div
+                        className="card shadow mt-3"
+                        style={{
+                          borderLeft: `4px solid ${getStatusColor(t.status)}`,
+                        }}
+                      >
                         <div className="card-body">
                           <h5 className="cart-title mb-1">{t.title}</h5>
                           <p className="card-text">{t.description}</p>
