@@ -1,7 +1,8 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import api from "../api/axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
   const [workspaces, setWorkpaces] = useState([]);
@@ -43,10 +44,24 @@ function Dashboard() {
     }
   };
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="container py-5" style={{ maxWidth: "900px" }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Your workspaces</h2>
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          onClick={handleLogout}
+        >
+          Log out
+        </button>
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
