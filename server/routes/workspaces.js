@@ -60,7 +60,7 @@ router.get("/:workspace_id/members", authMiddleware, async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT users.id,users.name FROM workspace_members JOIN users ON workspace_members.user_id = users.id WHERE workspace_members.workspace_id = $1 ORDER BY users.name ASC",
+      "SELECT users.id,users.name,workspace_members.role FROM workspace_members JOIN users ON workspace_members.user_id = users.id WHERE workspace_members.workspace_id = $1 ORDER BY users.name ASC",
       [workspace_id],
     );
 
