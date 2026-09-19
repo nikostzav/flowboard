@@ -3,18 +3,20 @@ INSERT INTO users (email, password_hash, name) VALUES
 ('alice@flowboard.com', '$2b$10$kQJ4B3vEXIAPjQkY2qI0deBdp/ZASZRsuKCjR34sESAegRy3AtBLe', 'Alice Nakamura'),
 ('ben@flowboard.com', '$2b$10$kQJ4B3vEXIAPjQkY2qI0deBdp/ZASZRsuKCjR34sESAegRy3AtBLe', 'Ben Torres'),
 ('carla@flowboard.com', '$2b$10$kQJ4B3vEXIAPjQkY2qI0deBdp/ZASZRsuKCjR34sESAegRy3AtBLe', 'Carla Jensen'),
-('devon@flowboard.com', '$2b$10$kQJ4B3vEXIAPjQkY2qI0deBdp/ZASZRsuKCjR34sESAegRy3AtBLe', 'Devon Cole');
+('devon@flowboard.com', '$2b$10$kQJ4B3vEXIAPjQkY2qI0deBdp/ZASZRsuKCjR34sESAegRy3AtBLe', 'Devon Cole'),
+-- Demo account for recruiters: demo@flowboard.dev / demo1234
+('demo@flowboard.dev', '$2b$10$vXoo7Uvy.un9QNI4N003Rufxnt3DbIO43I6ntU489DZWXUx8yGrsa', 'Demo User');
 
--- Workspace (owned by Alice)
+-- Workspace (owned by the demo user)
 INSERT INTO workspaces (name, owner_id) VALUES
-('Bluefin Studio', (SELECT id FROM users WHERE email = 'alice@flowboard.com'));
+('Bluefin Studio', (SELECT id FROM users WHERE email = 'demo@flowboard.dev'));
 
--- Workspace members (Alice as owner, others as members)
+-- Workspace members (the demo user is the owner so recruiters can try invites)
 INSERT INTO workspace_members (workspace_id, user_id, role)
-SELECT w.id, u.id, CASE WHEN u.email = 'alice@flowboard.com' THEN 'owner' ELSE 'member' END
+SELECT w.id, u.id, CASE WHEN u.email = 'demo@flowboard.dev' THEN 'owner' ELSE 'member' END
 FROM workspaces w, users u
 WHERE w.name = 'Bluefin Studio'
-AND u.email IN ('alice@flowboard.com', 'ben@flowboard.com', 'carla@flowboard.com', 'devon@flowboard.com');
+AND u.email IN ('demo@flowboard.dev', 'alice@flowboard.com', 'ben@flowboard.com', 'carla@flowboard.com', 'devon@flowboard.com');
 
 -- Projects
 INSERT INTO projects (workspace_id, name, description)
